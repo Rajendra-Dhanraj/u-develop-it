@@ -107,6 +107,77 @@ app.post("/api/candidate", ({ body }, res) => {
   });
 });
 
+// Update candidate party. Indicate the new party_id value and the candidate ID to be updated.
+app.put("/api/candidate/:id", (req, res) => {
+  const errors = inputCheck(req.body, "party_id");
+  if (errors) {
+    res.status(400).json({ error: errors });
+    return;
+  }
+
+  const sql = `UPDATE candidates SET party_id = ?
+WHERE id = ?`;
+
+  const params = [req.body.party_id, req.params.id];
+
+  db.run(sql, params, function (err, result) {
+    if (err) {
+      res.status(400).json({ error: err.message });
+      return;
+    }
+    res.json({
+      message: "success",
+      data: req.body,
+      changes: this.changes,
+    });
+  });
+});
+
+// Get all parties
+app.get("/api/parties", (req, res) => {
+  const sql = `SELECT * FROM parties`;
+  const params = [];
+  db.all(sql, params, (err, rows) => {
+    if (err) {
+      res.status(500).json({ error: err.message });
+      return;
+    }
+    res.json({
+      message: "success",
+      data: rows,
+    });
+  });
+});
+
+// Get single party
+app.get("/api/party/:id", (req, res) => {
+  const sql = `SELECT * FROM parties WHERE id = ?`;
+  const params = [req.params.id];
+  db.get(sql, params, (err, row) => {
+    if (err) {
+      res.status(400).json({ error: err.message });
+      return;
+    }
+    res.json({
+      message: "success",
+      data: row,
+    });
+  });
+});
+
+// Delete from parties
+app.delete("/api/party/:id", (req, res) => {
+  const sql = `DELETE FROM parties WHERE id = ?`;
+  const params = [req.params.id];
+  db.run(sql, params, function (err, result) {
+    if (err) {
+      res.status(400).json({ error: res.message });
+      return;
+    }
+    res.json({ message: "Successfully deleted", changes: this.changes });
+  });
+});
+
 // **KEEP AS LAST ROUTE** Default response for any other request not found - 404 message will be displayed (Catch Call).
 app.use((req, res) => {
   res.status(404).end();
