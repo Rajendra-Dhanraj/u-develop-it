@@ -19,7 +19,11 @@ const db = new sqlite3.Database("./db/election.db", (err) => {
 
 // Get all candidates
 app.get("/api/candidates", (req, res) => {
-  const sql = `SELECT * FROM candidates`;
+  const sql = `SELECT candidates.*, parties.name 
+  AS party_name 
+  FROM candidates 
+  LEFT JOIN parties 
+  ON candidates.party_id = parties.id`;
   const params = [];
   db.all(sql, params, (err, rows) => {
     if (err) {
@@ -34,18 +38,14 @@ app.get("/api/candidates", (req, res) => {
   });
 });
 
-// GET a single candidate
-// db.get(`SELECT * FROM candidates WHERE id = 1`, (err, row) =>{
-//     if (err) {
-//         console.log(err);
-//     }
-//     console.log(row);
-// });
-
 // Get single candidate
 app.get("/api/candidate/:id", (req, res) => {
-  const sql = `SELECT * FROM candidates 
-                 WHERE id = ?`;
+  const sql = `SELECT candidates.*, parties.name 
+  AS party_name 
+  FROM candidates 
+  LEFT JOIN parties 
+  ON candidates.party_id = parties.id 
+  WHERE candidates.id = ?`;
   const params = [req.params.id];
   db.get(sql, params, (err, row) => {
     if (err) {
@@ -59,14 +59,6 @@ app.get("/api/candidate/:id", (req, res) => {
     });
   });
 });
-
-// DELETE a candidate displayed in console.
-// db.run(`DELETE FROM candidates WHERE id = ?`, 1, function(err, result) {
-//     if (err) {
-//       console.log(err);
-//     }
-//     console.log(result, this, this.changes);
-//   });
 
 // Delete a candidate via server
 app.delete("/api/candidate/:id", (req, res) => {
@@ -84,18 +76,6 @@ app.delete("/api/candidate/:id", (req, res) => {
     });
   });
 });
-
-// Create a candidate
-// const sql = `INSERT INTO candidates (id, first_name, last_name, industry_connected)
-//             VALUES (?,?,?,?)`;
-// const params = [1, "Ronald", "Firbank", 1];
-// //ES5 function, not arrow function, to use "this"
-// db.run(sql, params, function (err, result) {
-//   if (err) {
-//     console.log(err);
-//   }
-//   console.log(result, this.lastID);
-// });
 
 // Create a candidate via server/express
 app.post("/api/candidate", ({ body }, res) => {
